@@ -16,6 +16,19 @@ import json
 def mycommands():
     pass
 
+def load_tasks(filename):
+    try:
+        with open(filename, "r") as f:
+            return json.load(f)
+    except(FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def save_tasks(filename, tasks):
+
+     with open(filename, "w") as f:
+            
+        json.dump(tasks,f,indent=4)     
+
 PRIORITIES = {
     "l": "low",
     "m": "medium",
@@ -31,7 +44,7 @@ PRIORITIES = {
 @click.option("-d", "--desc",
                 prompt="Enter the description")
 
-@click.option("-f", "--filename",
+@click.option("-f", "--file",
               type=click.Path(exists=False),
               help="Name of the file",
               default="TODOS1.json",
@@ -43,27 +56,18 @@ PRIORITIES = {
               show_default=True)
 
 
-def add (name, desc, priority, filename):
+def add (name, desc, priority, file):
     new_task = {
         "name": name,
         "Description": desc,
         "Priority": PRIORITIES[priority],
     }
-    #Load the tasks
-    try:
-        with open(filename, "r") as f:
-           tasks = json.load(f)
-    except(FileNotFoundError, json.JSONDecodeError):
-        tasks = []
     
-    #Append the new task to the the list of tasks
+    tasks = load_tasks(file)
     tasks.append(new_task)
+    save_tasks(file,tasks)
     
-    #Write the new list of tasks to the json file
-    with open(filename, "w") as f:
-        json.dump(tasks, f, indent=4)
-        
-    click.echo("Task added successfully.")
+    click.echo("👌 Task added successfully.")
     
 #List Command
 @click.command()
@@ -83,8 +87,8 @@ def add (name, desc, priority, filename):
 
 def list(file, priority):
     try:
-        with open(file, "r") as f:
-            tasks = json.load(f)
+        
+            tasks = load_tasks(file)
             if not tasks:
                 click.echo("😒, NO TASKS FOR TODAY!")
                 return
