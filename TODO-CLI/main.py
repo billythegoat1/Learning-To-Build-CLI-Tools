@@ -35,7 +35,7 @@ PRIORITIES = {
     "h": "high"
 }
 
-#Create Command
+#Add Command
 @click.command()
 
 @click.option("-n", "--name",
@@ -106,9 +106,30 @@ def list(file, priority):
     except(FileNotFoundError, json.JSONDecodeError):
         click.echo(" 🫤 No file was found! Please create one.")
         
+# Delete Command
+@click.command()
 
+@click.option("-f", "--file",
+                type = click.Path(exists=True),
+                default="TODOS1.json",
+                show_default=True,
+                help = "File you want to delete task(s) from.")
+@click.argument("index", type=int)
+
+def delete(file, index):
+    tasks = load_tasks(file)
+    
+    if index < 1 or index > len(tasks):
+        click.echo("🚫 INVALID INDEX!")
+        return
+
+    deleted_task = tasks.pop(index - 1)
+    
+    save_tasks(file, tasks)
+    click.echo(f"🫡 Task: {deleted_task['name']}, was deleted successfully.")
 mycommands.add_command(add)
 mycommands.add_command(list)
+mycommands.add_command(delete)
 
 
 if __name__ == "__main__":
